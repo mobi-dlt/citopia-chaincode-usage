@@ -3,7 +3,7 @@
 This repository contains Citopia chaincodes, 
 start up instructions and chaincode API.
 
-### Getting started
+### Setup AWS account
 
 1. Create an AWS account
 2. Send you AWS account ID to Citopia administrator
@@ -14,13 +14,13 @@ start up instructions and chaincode API.
     /admin-msp/admincerts
     /admin-msp/cacerts
     ```
-6. Clone this repository on your Amazon EC2 instance:
+6. Clone current repository on your Amazon EC2 instance:
 
    ```
    git clone https://github.com/mobi-dlt/citopia-chaincodes.git 
    ```
 
-### Install chaincode on your Amazon EC2 instance.
+### Install chaincode on EC2 instance
 
 Run the following command to install chaincode on a peer node:
 
@@ -115,6 +115,6 @@ args[2] - serviceId id
 args[3] - status - "initiated"|"waiting"|"in-progress"|"canceled"|"completed-by-provider"|"completed"
  ```
     
-### Build your own server
+### API usage example
  
-(see `/nodejs-server-example`)
+See node.js usage example [here](./nodejs-server-example).
