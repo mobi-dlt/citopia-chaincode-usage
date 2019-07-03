@@ -1,0 +1,82 @@
+{
+  "name": "bikeshare",
+  "x-type": "hlfv1",
+  "description": "Citopia Network",
+  "version": "1.0",
+  "client": {
+    "organization": "bikeshare",
+    "credentialStore": {
+      "path": "./wallet/admin",
+      "cryptoStore": {
+        "path": "./wallet/admin"
+      }
+    }
+  },
+  "channels": {
+    "citopia-channel": {
+      "orderers": [
+        "orderer.com"
+      ],
+      "peers": {
+        "peer1": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        }
+      }
+    }
+  },
+  "organizations": {
+    "bikeshare": {
+      "mspid": "m-D5LU2DVRYRDWBPJSZMHEHHL2RE",
+      "peers": [
+        "peer1"
+      ],
+      "certificateAuthorities": [
+        "ca-org1"
+      ]
+    }
+  },
+  "orderers": {
+    "orderer.com": {
+      "url": "grpcs://orderer.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com:30001",
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com"
+      },
+      "tlsCACerts": {
+        "path": "/home/ec2-user/managedblockchain-tls-chain.pem"
+      }
+    }
+  },
+  "peers": {
+    "peer1": {
+      "url": "grpcs://nd-ttpv4wq2kzapjdbddwbfxeap5y.m-d5lu2dvryrdwbpjszmhehhl2re.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com:30006",
+      "eventUrl": "grpcs://nd-ttpv4wq2kzapjdbddwbfxeap5y.m-d5lu2dvryrdwbpjszmhehhl2re.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com:30007",
+      "grpcOptions": {
+        "ssl-target-name-override": "nd-ttpv4wq2kzapjdbddwbfxeap5y.m-d5lu2dvryrdwbpjszmhehhl2re.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com"
+      },
+      "tlsCACerts": {
+        "path": "/home/ec2-user/managedblockchain-tls-chain.pem"
+      }
+    }
+  },
+  "certificateAuthorities": {
+    "ca-org1": {
+      "url": "https://ca.m-d5lu2dvryrdwbpjszmhehhl2re.n-ch5hfuwxxrhyjluxacsdingz6m.managedblockchain.us-east-1.amazonaws.com:30005",
+      "httpOptions": {
+        "verify": false
+      },
+      "tlsCACerts": {
+        "path": "/home/ec2-user/managedblockchain-tls-chain.pem"
+      },
+      "registrar": [
+        {
+          "enrollId": "admin",
+          "enrollSecret": "CitopiaAdminpw8"
+        }
+      ],
+      "caName": "m-D5LU2DVRYRDWBPJSZMHEHHL2RE"
+    }
+  }
+}
