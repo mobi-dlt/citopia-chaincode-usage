@@ -1,26 +1,28 @@
-# Citopia starter kit
-This repository contains Citopia chaincodes, start up instructions and server example
+# Citopia API
 
+This repository contains Citopia chaincodes, 
+start up instructions and chaincode API.
 
 ## Getting started
 
 1. Create an AWS account
 2. Send you AWS account ID to Citopia administrator
-3. Accept AWS managed blockchain join proposal
-4. Go through AWS Managed Blockchain set up steps from 2 to 5 (https://docs.aws.amazon.com/managed-blockchain/latest/managementguide/get-started-create-endpoint.html)
+3. Accept AMB (Amazon Managed Blockchain) join proposal
+4. Go through [AMB setup steps](https://docs.aws.amazon.com/managed-blockchain/latest/managementguide/get-started-create-endpoint.html) from 2 to 5
 5. Copy and send to Citopia administrators the following files
     ```
     /admin-msp/admincerts
     /admin-msp/cacerts
     ```
-6. Clone this repository in to your Amazon EC2 instance
+6. Clone this repository on your Amazon EC2 instance:
+
    ```
    git clone https://github.com/mobi-dlt/citopia-chaincodes.git 
    ```
 
-7. Install and run chaincode
+7. Install and run chaincode on your Amazon EC2 instance.
 
-    Run the following command in your EC2 instance to install chaincode on the peer node:
+    Run the following command to install chaincode on a peer node:
     
     ```sh
     docker exec -e "CORE_PEER_TLS_ENABLED=true" \
