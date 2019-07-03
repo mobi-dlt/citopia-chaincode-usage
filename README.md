@@ -13,9 +13,14 @@ This repository contains Citopia chaincodes, start up instructions and server ex
     /admin-msp/admincerts
     /admin-msp/cacerts
     ```
-6. Install and run chaincode
+6. Clone this repository in to your Amazon EC2 instance
+   ```
+   git clone https://github.com/mobi-dlt/citopia-chaincodes.git 
+   ```
 
-    Run the following command to install chaincode on the peer node:
+7. Install and run chaincode
+
+    Run the following command in your EC2 instance to install chaincode on the peer node:
     
     ```sh
     docker exec -e "CORE_PEER_TLS_ENABLED=true" \
@@ -57,7 +62,7 @@ This repository contains Citopia chaincodes, start up instructions and server ex
     
     After making changes in the chaincode you must upgrade it using the following command:
     
-7. Upgrade the chaincode
+8. Upgrade the chaincode
 
     In case of changes to the contract logic by Citopia (for example, adding new properties to the model),
      you will also need to update your version of the contract. To do this, run the following command
@@ -74,4 +79,4 @@ This repository contains Citopia chaincodes, start up instructions and server ex
     --cafile /opt/home/managedblockchain-tls-chain.pem --tls
     ```
     
-8. Build your own server (see `/nodejs-server-example`)
+9. Build your own server (see `/nodejs-server-example`)
