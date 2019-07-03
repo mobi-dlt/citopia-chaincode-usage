@@ -3,7 +3,7 @@
 This repository contains Citopia chaincodes, 
 start up instructions and chaincode API.
 
-## Getting started
+### Getting started
 
 1. Create an AWS account
 2. Send you AWS account ID to Citopia administrator
@@ -20,65 +20,101 @@ start up instructions and chaincode API.
    git clone https://github.com/mobi-dlt/citopia-chaincodes.git 
    ```
 
-7. Install and run chaincode on your Amazon EC2 instance.
+### Install chaincode on your Amazon EC2 instance.
 
-    Run the following command to install chaincode on a peer node:
-    
-    ```sh
-    docker exec -e "CORE_PEER_TLS_ENABLED=true" \
-    -e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
-    -e "CORE_PEER_LOCALMSPID=$MSP" \
-    -e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
-    -e "CORE_PEER_ADDRESS=$PEER" \
-    cli peer chaincode install \
-    -n trip-contract -v 1.0.0 -p github.com/chaincode/trip-contract
-    ```
-    
-    Run the following command to instantiate the chaincode:
-    
-    ```sh
-    docker exec -e "CORE_PEER_TLS_ENABLED=true" \
-    -e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
-    -e "CORE_PEER_LOCALMSPID=$MSP" \
-    -e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
-    -e "CORE_PEER_ADDRESS=$PEER" \
-    cli peer chaincode instantiate \
-    -o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
-    -c '{"Args":[]}' \
-    --cafile /opt/home/managedblockchain-tls-chain.pem --tls
-    ```
-    
-    You may have to wait a minute or two for the instantiation to propagate to the peer node. 
-    Use the following command to verify instantiation:
-    
-    ```sh
-    docker exec -e "CORE_PEER_TLS_ENABLED=true" \
-    -e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
-    -e "CORE_PEER_LOCALMSPID=$MSP" \
-    -e  "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
-    -e "CORE_PEER_ADDRESS=$PEER"  \
-    cli peer chaincode list --instantiated \
-    -o $ORDERER -C citopia-channel \
-    --cafile /opt/home/managedblockchain-tls-chain.pem --tls
-    ```
-    
-    After making changes in the chaincode you must upgrade it using the following command:
-    
-8. Upgrade the chaincode
+Run the following command to install chaincode on a peer node:
 
-    In case of changes to the contract logic by Citopia (for example, adding new properties to the model),
-     you will also need to update your version of the contract. To do this, run the following command
+```bash
+docker exec -e "CORE_PEER_TLS_ENABLED=true" \
+-e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
+-e "CORE_PEER_LOCALMSPID=$MSP" \
+-e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
+-e "CORE_PEER_ADDRESS=$PEER" \
+cli peer chaincode install \
+-n trip-contract -v 1.0.0 -p github.com/chaincode/trip-contract
+```
+
+Run the following command to instantiate the chaincode:
+
+```bash
+docker exec -e "CORE_PEER_TLS_ENABLED=true" \
+-e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
+-e "CORE_PEER_LOCALMSPID=$MSP" \
+-e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
+-e "CORE_PEER_ADDRESS=$PEER" \
+cli peer chaincode instantiate \
+-o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
+-c '{"Args":[]}' \
+--cafile /opt/home/managedblockchain-tls-chain.pem --tls
+```
+
+You may have to wait a minute or two for the instantiation to propagate to the peer node. 
+Use the following command to verify instantiation:
+
+```bash
+docker exec -e "CORE_PEER_TLS_ENABLED=true" \
+-e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
+-e "CORE_PEER_LOCALMSPID=$MSP" \
+-e  "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
+-e "CORE_PEER_ADDRESS=$PEER"  \
+cli peer chaincode list --instantiated \
+-o $ORDERER -C citopia-channel \
+--cafile /opt/home/managedblockchain-tls-chain.pem --tls
+```
     
-    ```sh
-    docker exec -e "CORE_PEER_TLS_ENABLED=true" \
-    -e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
-    -e "CORE_PEER_LOCALMSPID=$MSP" \
-    -e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
-    -e "CORE_PEER_ADDRESS=$PEER" \
-    cli peer chaincode upgrade \
-    -o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
-    -c '{"Args":[]}' \
-    --cafile /opt/home/managedblockchain-tls-chain.pem --tls
-    ```
+### Query the Chaincode
+
+You may need to wait a brief moment for the chaincode instantiation to complete before you run
+ the following command to query a value:
+ 
+```bash
+docker exec -e "CORE_PEER_TLS_ENABLED=true" \
+-e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
+-e "CORE_PEER_ADDRESS=$PEER" \
+-e "CORE_PEER_LOCALMSPID=$MSP" \
+-e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
+cli peer chaincode query -C citopia-channel \
+-n trip-contract -c '{"function":"findTrips","Args":[]}'
+```
     
-9. Build your own server (see `/nodejs-server-example`)
+### Upgrade the chaincode
+
+In case of changes to the contract logic by Citopia (for example, adding new properties to the model),
+ you will also need to update your version of the contract. To do this, run the following command
+
+```bash
+docker exec -e "CORE_PEER_TLS_ENABLED=true" \
+-e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
+-e "CORE_PEER_LOCALMSPID=$MSP" \
+-e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
+-e "CORE_PEER_ADDRESS=$PEER" \
+cli peer chaincode upgrade \
+-o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
+-c '{"Args":[]}' \
+--cafile /opt/home/managedblockchain-tls-chain.pem --tls
+```
+
+### Chaincode API
+
+#### Trip contract
+
+ * `findTrip(args[])` - find trip by given id
+ 
+ Parameters: 
+ ```
+args[0] - trip id
+ ```
+
+ * `findTrips(args[])` - find trips by parameters
+ 
+ Parameters: 
+ ```
+args[0] - user id
+args[1] - provider id
+args[2] - serviceId id
+args[3] - status - "initiated"|"waiting"|"in-progress"|"canceled"|"completed-by-provider"|"completed"
+ ```
+    
+### Build your own server
+ 
+(see `/nodejs-server-example`)

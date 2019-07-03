@@ -141,12 +141,12 @@ func (s *SmartContract) findTrip(stub shim.ChaincodeStubInterface, args []string
 	return shim.Success(tripAsBytes)
 }
 
-// The main function is only relevant in unit test mode. Only included here for completeness.
+// main function starts up the chaincode in the container during instantiate
 func main() {
 
 	// Create a new Smart Contract
 	err := shim.Start(new(SmartContract))
 	if err != nil {
-		fmt.Printf("Error creating new Smart Contract: %s", err)
+		fmt.Printf("Error starting Trip chaincode: %s", err)
 	}
 }
