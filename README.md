@@ -34,6 +34,16 @@ cli peer chaincode install \
 -n trip-contract -v 1.0.0 -p github.com/chaincode/trip-contract
 ```
 
+In case the chaincode contains additional Go dependencies, 
+you must install them using [govendor](https://github.com/kardianos/govendor)
+
+1. `go get github.com/kardianos/govendor`
+2. change `GOPATH` to you chaincode folder (`./chaincode` in this example)
+3. `cd` in to contract folder (`./chaincode/src/trip-contract`)
+4. `govendor init`
+5. `go get`
+6. `govendor add +external`
+
 ### Query the Chaincode
 
 You may need to wait a brief moment for the chaincode instantiation to complete before you run
