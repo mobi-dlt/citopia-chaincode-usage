@@ -1,4 +1,4 @@
-# Citopia API
+# Citopia Chaincode Usage
 
 This repository contains Citopia chaincodes, 
 start up instructions and chaincode API.
