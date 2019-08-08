@@ -6,22 +6,42 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
+	"time"
 )
 
 type SmartContract struct {
 }
 
 type Trip struct {
-	Id                   string `json:"id"`
-	UserId               string `json:"userId"`
-	ProviderId           string `json:"providerId"`
-	ServiceId            string `json:"serviceId"`
-	MapBitId             string `json:"mapBitId"`
-	Status               string `json:"status"`
-	CurrentUserLatitude  string `json:"currentUserLatitude"`
-	CurrentUserLongitude string `json:"currentUserLongitude"`
-	StartTime            string `json:"startTime"`
-	Type                 string `json:"type"`
+	Id                 string  `json:"id"`
+	UserId             string  `json:"userId"`
+	ProviderId         string  `json:"providerId"`
+	MapBitId           string  `json:"mapBitId"`
+	ServiceId          string  `json:"serviceId"`
+	ServiceType        string  `json:"serviceType"`
+	ServiceVehicleType string  `json:"serviceVehicleType"`
+	Completed          bool    `json:"completed"`
+	Paid               bool    `json:"paid"`
+	CurrentLat         string  `json:"currentLat"`
+	CurrentLng         string  `json:"currentLng"`
+	DestinationLat     string  `json:"destinationLat"`
+	DestinationLng     string  `json:"destinationLng"`
+	Co2                float64 `json:"co2"`
+	Traffic            float64 `json:"traffic"`
+	Health             float64 `json:"health"`
+	StartTime          int     `json:"startTime"`
+	EndTime            int     `json:"endTime"`
+	CreateDate         int64   `json:"createDate"`
+	Type               string  `json:"type"`
+}
+
+type TripFilter struct {
+	UserId       string   `json:"userId"`
+	ProviderId   string   `json:"providerId"`
+	ServiceId    string   `json:"serviceId"`
+	ServiceTypes []string `json:"serviceTypes"`
+	Completed    int      `json:"completed"`
+	Paid         int      `json:"paid"`
 }
 
 /*
@@ -40,36 +60,52 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := stub.GetFunctionAndParameters()
-	fmt.Println("Invoke function:", function)
-	fmt.Println("Invoke args:", args)
+	fmt.Println("=============== INVOKE ===============")
+	fmt.Println("Function:", function)
+	fmt.Println("Args:", args)
+	fmt.Println("Datetime:", time.Now().Format("01-02-2006 15:04:05"))
+	fmt.Println("======================================")
 
-	// Route to the appropriate handler function to interact with the ledger appropriately
-	if function == "findTrip" {
+	switch function {
+	case "findTrip":
 		return s.findTrip(stub, args)
-	} else if function == "findTrips" {
+	case "findTrips":
 		return s.findTrips(stub, args)
+	default:
+		return shim.Error("Invalid Smart Contract function name.")
 	}
-
-	return shim.Error("Invalid Smart Contract function name.")
 }
 
-/*
- * Find trips by parameters
- *  args[0] - user id
- *  args[1] - provider id
- *  args[2] - serviceId id
- *  args[3] - status - "initiated"|"waiting"|"in-progress"|"canceled"|"completed-by-provider"|"completed"
- *
- * Returns all trips if parameters are not specified
- */
-func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []string) sc.Response {
-	userId := args[0]
-	providerId := args[1]
-	serviceId := args[2]
-	status := args[3]
+func (s *SmartContract) findTrip(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	// load all trips
-	resultsIterator, err := stub.GetStateByPartialCompositeKey("trip", []string{})
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	key, compositeErr := stub.CreateCompositeKey("record", []string{args[0]})
+	if compositeErr != nil {
+		return shim.Error(fmt.Sprintf("Could not create a composite key for %s: %s", args[0], compositeErr.Error()))
+	}
+	recordAsBytes, _ := stub.GetState(key)
+	return shim.Success(recordAsBytes)
+}
+
+func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	// Parse TripFilter from JSON
+	tripFilterAsJson := args[0]
+	tripFilterAsBytes := []byte(tripFilterAsJson)
+	tripFilter := TripFilter{}
+	err := json.Unmarshal(tripFilterAsBytes, &tripFilter)
+	if err != nil {
+		return shim.Error("Could not unmarshal given TripFilter")
+	}
+
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("record", []string{})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -79,7 +115,6 @@ func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []strin
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 
-	// iterate over all trips and check parameters matching
 	bArrayMemberAlreadyWritten := false
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
@@ -93,16 +128,32 @@ func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []strin
 			fmt.Printf("Error: %s", marshErr)
 		}
 
-		if len(userId) > 0 && trip.UserId != userId {
+		if len(tripFilter.UserId) > 0 && trip.UserId != tripFilter.UserId {
 			continue
 		}
-		if len(providerId) > 0 && trip.ProviderId != providerId {
+		if len(tripFilter.ProviderId) > 0 && trip.ProviderId != tripFilter.ProviderId {
 			continue
 		}
-		if len(serviceId) > 0 && trip.ServiceId != serviceId {
+		if len(tripFilter.ServiceId) > 0 && trip.ServiceId != tripFilter.ServiceId {
 			continue
 		}
-		if len(status) > 0 && trip.Status != status {
+		if len(tripFilter.ServiceTypes) > 0 && indexOf(tripFilter.ServiceTypes, trip.ServiceType) == -1 {
+			continue
+		}
+
+		completed := false
+		if tripFilter.Completed == 1 {
+			completed = true
+		}
+		if tripFilter.Completed != 0 && trip.Completed != completed {
+			continue
+		}
+
+		paid := false
+		if tripFilter.Paid == 1 {
+			paid = true
+		}
+		if tripFilter.Paid != 0 && trip.Paid != paid {
 			continue
 		}
 
@@ -111,7 +162,7 @@ func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []strin
 			buffer.WriteString(",")
 		}
 
-		// Record is a JSON object, so we write as-is
+		// Trip is a JSON object, so we write as-is
 		buffer.WriteString(string(queryResponse.Value))
 		bArrayMemberAlreadyWritten = true
 	}
@@ -120,33 +171,21 @@ func (s *SmartContract) findTrips(stub shim.ChaincodeStubInterface, args []strin
 	return shim.Success(buffer.Bytes())
 }
 
-/*
- * Find trip by id
- *  args[0] - trip id
- */
-func (s *SmartContract) findTrip(stub shim.ChaincodeStubInterface, args []string) sc.Response {
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+func indexOf(arr []string, element string) int {
+	for k, v := range arr {
+		if v == element {
+			return k
+		}
 	}
-
-	// build composite key from trip type and id
-	key, compositeErr := stub.CreateCompositeKey("trip", []string{args[0]})
-	if compositeErr != nil {
-		return shim.Error(fmt.Sprintf("Could not create a composite key for %s: %s", args[0], compositeErr.Error()))
-	}
-
-	// load trip
-	tripAsBytes, _ := stub.GetState(key)
-	return shim.Success(tripAsBytes)
+	return -1
 }
 
-// main function starts up the chaincode in the container during instantiate
+// The main function is only relevant in unit test mode. Only included here for completeness.
 func main() {
 
 	// Create a new Smart Contract
 	err := shim.Start(new(SmartContract))
 	if err != nil {
-		fmt.Printf("Error starting Trip chaincode: %s", err)
+		fmt.Printf("Error creating new Smart Contract: %s", err)
 	}
 }

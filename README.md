@@ -34,34 +34,6 @@ cli peer chaincode install \
 -n trip-contract -v 1.0.0 -p github.com/chaincode/trip-contract
 ```
 
-Run the following command to instantiate the chaincode:
-
-```bash
-docker exec -e "CORE_PEER_TLS_ENABLED=true" \
--e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
--e "CORE_PEER_LOCALMSPID=$MSP" \
--e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
--e "CORE_PEER_ADDRESS=$PEER" \
-cli peer chaincode instantiate \
--o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
--c '{"Args":[]}' \
---cafile /opt/home/managedblockchain-tls-chain.pem --tls
-```
-
-You may have to wait a minute or two for the instantiation to propagate to the peer node. 
-Use the following command to verify instantiation:
-
-```bash
-docker exec -e "CORE_PEER_TLS_ENABLED=true" \
--e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
--e "CORE_PEER_LOCALMSPID=$MSP" \
--e  "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
--e "CORE_PEER_ADDRESS=$PEER"  \
-cli peer chaincode list --instantiated \
--o $ORDERER -C citopia-channel \
---cafile /opt/home/managedblockchain-tls-chain.pem --tls
-```
-    
 ### Query the Chaincode
 
 You may need to wait a brief moment for the chaincode instantiation to complete before you run
@@ -76,23 +48,6 @@ docker exec -e "CORE_PEER_TLS_ENABLED=true" \
 cli peer chaincode query -C citopia-channel \
 -n trip-contract -c '{"function":"findTrips","Args":[]}'
 ```
-    
-### Upgrade the chaincode
-
-In case of changes to the contract logic by Citopia (for example, adding new properties to the model),
- you will also need to update your version of the contract. To do this, run the following command
-
-```bash
-docker exec -e "CORE_PEER_TLS_ENABLED=true" \
--e "CORE_PEER_TLS_ROOTCERT_FILE=/opt/home/managedblockchain-tls-chain.pem" \
--e "CORE_PEER_LOCALMSPID=$MSP" \
--e "CORE_PEER_MSPCONFIGPATH=$MSP_PATH" \
--e "CORE_PEER_ADDRESS=$PEER" \
-cli peer chaincode upgrade \
--o $ORDERER -C citopia-channel -n trip-contract -v 1.0.0 \
--c '{"Args":[]}' \
---cafile /opt/home/managedblockchain-tls-chain.pem --tls
-```
 
 ### Chaincode API
 
@@ -101,19 +56,23 @@ cli peer chaincode upgrade \
  * `findTrip(args[])` - find trip by given id
  
  Parameters: 
- ```
-args[0] - trip id
- ```
+ 
+ `args[0]` - trip id
 
- * `findTrips(args[])` - find trips by parameters
+ * `findTrips(args[])` - find trips by filter
  
  Parameters: 
- ```
-args[0] - user id
-args[1] - provider id
-args[2] - serviceId id
-args[3] - status - "initiated"|"waiting"|"in-progress"|"canceled"|"completed-by-provider"|"completed"
- ```
+
+`args[0]` - stringified filter
+
+`filter`:
+ * `providerId: string` - current provider id (**required**)
+ * `userId: string` - trip user id
+ * `serviceId: string` - user service id
+ * `serviceTypes: string[]` - possible values: "type-a", "type-b", "type-c"
+ * `completed: number` - `0` for `false` or `1` for `true`
+ * `paid: number` - `0` for `false` or `1` for `true`
+
     
 ### API usage example
  

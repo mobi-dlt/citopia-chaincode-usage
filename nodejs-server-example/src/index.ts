@@ -9,12 +9,18 @@ async function bootstrap() {
   app.use(bodyParser.json())
 
   app.get("/trips", async function(req, res) {
+    const filter = {
+      providerId: process.env.PROVIDER_ID,
+      completed: 0,
+      paid: 0,
+    }
+
     const response = await queryChaincode(
       "citopia-channel",
       "admin",
-      "trip-contract-go",
+      "trip-contract",
       "findTrips",
-      [],
+      [JSON.stringify(filter)],
     )
     const jsonResults: any[] = JSON.parse(response)
     const trips = jsonResults.map(result => {
@@ -22,13 +28,21 @@ async function bootstrap() {
         id: result.id,
         userId: result.userId,
         providerId: result.providerId,
-        serviceId: result.serviceId,
         mapBitId: result.mapBitId,
-        status: result.status,
-        currentUserLatitude: result.currentUserLatitude,
-        currentUserLongitude: result.currentUserLongitude,
-        startTime: parseInt(result.startTime),
-        type: result.type,
+        serviceId: result.serviceId,
+        serviceType: result.serviceType,
+        serviceVehicleType: result.serviceVehicleType,
+        completed: result.completed,
+        paid: result.paid,
+        currentLat: result.currentLat,
+        currentLng: result.currentLng,
+        destinationLat: result.destinationLat,
+        destinationLng: result.destinationLng,
+        co2: result.co2,
+        traffic: result.traffic,
+        health: result.health,
+        startTime: result.startTime,
+        endTime: result.endTime
       }
     })
     res.json(trips)
